@@ -1,0 +1,15 @@
+p {
+  font-weight: bold;
+}
+
+.leftcolumn {
+  padding: 10px;
+}
+
+.rightgraph {
+}
+
+.ait {
+  display: flex;
+  padding: 10px;
+}
