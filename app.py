@@ -25,7 +25,7 @@ def makeplot(S, blim, **kwargs):
     sigmas = np.linspace(0, 1.0, 100)
     chis = np.linspace(0.0, blim, 100)
     SS, XX = np.meshgrid(sigmas, chis)
-    XX = XX/S if bgfrac else XX
+    XX = XX*S if bgfrac else XX
     ## The divide by 30 is to turn days into months
     F = SensitivityTime(S, XX, SS, useMeasure, Z)/30
     F[F<0] = cap
