@@ -5,11 +5,14 @@ import numpy as np
 from dash.dependencies import Input, Output, State
 import plotly.graph_objects as go
 
+mathjax = ['https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML']
+
 app = dash.Dash(
         __name__,
         meta_tags=[
             {"name": "viewport", "content":"width=device-width, initial-scale=1.0"}
             ],
+        external_scripts=mathjax,
         )
 
 
@@ -32,7 +35,7 @@ def makeplot(S, blim, **kwargs):
     F[F>=cap+1] = cap+1
     return sigmas, chis, F
 
-app.layout = html.Div(
+plotbody = html.Div(
     className="ait",
     children=[
         html.Div(
@@ -53,6 +56,8 @@ app.layout = html.Div(
                     type='number'
                 ),
                 html.P("Sensitivity Equation"),
+                html.P("$$ Z = \\frac{st}{\sqrt{bt+(\sigma t)^2}} $$", id="disceq"),
+                html.P("$$ Z = \\frac{st}{\sqrt{bt+st+(\sigma t)^2}} $$", id="measeq"),
                 dcc.RadioItems(
                     id='radio-senstype',
                     options=[{'label': i, 'value': i} for i in ['Discovery', 'Measurement']],
@@ -93,9 +98,17 @@ app.layout = html.Div(
             children=dcc.Graph(
                 id="sens",
             )
-        )
+        ),
     ]
 )
+
+equations = html.Div( 
+    children= [
+        html.H3("Sensitivity Equation"),
+    ]
+)
+
+app.layout = html.Div( children = [ plotbody ] )
 
 @app.callback(
         Output('sens', 'figure'),
@@ -132,6 +145,23 @@ def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs):
     fig.update_layout(width=800, height=600)
     return fig
 
+@app.callback(
+        Output('disceq', 'style'),
+        Input('radio-senstype', 'value'),
+        )
+def update_eq(eq):
+    if eq == 'Measurement':
+        return {'display': 'none'}
+    return {'display': 'block'}
+
+@app.callback(
+        Output('measeq', 'style'),
+        Input('radio-senstype', 'value'),
+        )
+def update_eq(eq):
+    if eq == 'Discovery':
+        return {'display': 'none'}
+    return {'display': 'block'}
 
 app.title = "AIT Sensitivity"
 server = app.server
