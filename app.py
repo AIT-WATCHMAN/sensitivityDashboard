@@ -28,8 +28,8 @@ def makeplot(S, blim, **kwargs):
     XX = XX*S if bgfrac else XX
     ## The divide by 30 is to turn days into months
     F = SensitivityTime(S, XX, SS, useMeasure, Z)/30
-    F[F<0] = cap
-    F[F>=cap] = cap
+    F[F<0] = cap+1
+    F[F>=cap+1] = cap+1
     return sigmas, chis, F
 
 app.layout = html.Div(
@@ -123,7 +123,7 @@ def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs):
                 ),
                 colorscale=cs,
                 line = dict(smoothing=1.0),
-                contours=dict(start=0.001,end=months+0.001,size=1),
+                contours=dict(start=0.0,end=months,size=1),
             ),
           )
     fig.update_xaxes(title_text="Fractional Background Uncertainty")
