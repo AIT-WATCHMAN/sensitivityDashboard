@@ -42,52 +42,60 @@ plotbody = html.Div(
             id="left",
             className="leftcolumn",
             children=[
-                html.P("Signal Rate (per day)"),
+                html.H4("Signal Rate (per day)"),
                 dcc.Input(
                     id='input-signal-rate',
                     value=0.2,
                     min=0.0,
                     type='number'
                 ),
-                html.P("Y-axis Limit"),
+                html.H4("Y-axis Limit"),
                 dcc.Input(
                     id='input-ylim',
                     value=1.0,
                     type='number'
                 ),
-                html.P("Sensitivity Equation"),
-                html.P("$$ Z = \\frac{st}{\sqrt{bt+(\sigma t)^2}} $$", id="disceq"),
-                html.P("$$ Z = \\frac{st}{\sqrt{bt+st+(\sigma t)^2}} $$", id="measeq"),
+                html.H4("Sensitivity Equation"),
+                html.H4("$$ Z = \\frac{st}{\sqrt{bt+(\sigma t)^2}} $$", id="disceq"),
+                html.H4("$$ Z = \\frac{st}{\sqrt{bt+st+(\sigma t)^2}} $$", id="measeq"),
                 dcc.RadioItems(
                     id='radio-senstype',
                     options=[{'label': i, 'value': i} for i in ['Discovery', 'Measurement']],
                     value='Discovery',
                     labelStyle={'display': 'block'}
                 ),
-                html.P("Y-Axis Toggle"),
+                html.H4("Y-Axis Toggle"),
                 dcc.RadioItems(
                     id='radio-bgtoggle',
                     options=[{'label': i, 'value': i} for i in ['Background Total', 'Background Fraction']],
                     value='Background Total',
                     labelStyle={'display': 'block'}
                 ),
-                html.P("Target σ"),
+                html.H4("Target σ"),
                 dcc.Input(
                     id='input-sigma',
                     value=3.0,
                     type='number'
                 ),
-                html.P("Max Months"),
+                html.H4("Max Months"),
                 dcc.Input(
                     id='input-months',
                     value=6.0,
                     type='number'
                 ),
-                html.P("Colorscheme"),
+                html.H4("Colorscheme"),
                 dcc.Dropdown(
                     id='dropdown-color',
                     options=[{'label': i, 'value': i} for i in ['Blackbody', 'Turbo']],
-                    value='Blackbody',
+                    value='Turbo',
+                    clearable=False,
+                ),
+                dcc.Dropdown(
+                    id='dropdown-lines',
+                    options=[ {'label': 'Contour Lines', 'value': 'lines'},
+                              {'label': 'Filled Contour', 'value': 'fill'},
+                              {'label': 'Heatmap', 'value': 'heatmap'} ],
+                    value='lines',
                     clearable=False,
                 ),
             ],
@@ -104,11 +112,21 @@ plotbody = html.Div(
 
 equations = html.Div( 
     children= [
-        html.H3("Sensitivity Equation"),
+        html.H4("Sensitivity Equation"),
     ]
 )
 
-app.layout = html.Div( children = [ plotbody ] )
+description = html.Div(
+    children = [
+        html.Hr()
+    ]
+)
+with open("description.md") as readme:
+    descriptionString = readme.read()
+    description.children.append(dcc.Markdown(descriptionString))
+
+
+app.layout = html.Div( children = [ plotbody, description ] )
 
 @app.callback(
         Output('sens', 'figure'),
@@ -119,8 +137,9 @@ app.layout = html.Div( children = [ plotbody ] )
         Input('input-months', 'value'),
         Input('radio-bgtoggle', 'value'),
         Input('dropdown-color', 'value'),
+        Input('dropdown-lines', 'value'),
         )
-def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs):
+def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs, clines):
     useMeasure = True if discVal == 'Measurement' else False
     useBGFrac = True if bgtoggle == "Background Fraction" else False
     x, y, z = makeplot(sig, blim, useMeasure=useMeasure, Z=sigma, cap=months, bgfrac=useBGFrac )
@@ -137,6 +156,8 @@ def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs):
                 colorscale=cs,
                 line = dict(smoothing=1.0),
                 contours=dict(start=0.0,end=months,size=1),
+                contours_coloring=clines,
+                line_width=2,
             ),
           )
     fig.update_xaxes(title_text="Fractional Background Uncertainty")
