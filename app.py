@@ -35,6 +35,9 @@ def makeplot(S, blim, **kwargs):
     F[F>=cap+1] = cap+1
     return sigmas, chis, F
 
+copt = [ 'Turbo_r', 'Blackbody_r', 'Viridis_r', 'Cividis_r', 'Matter', 'Haline_r']
+coloroptions = [{'label': f.replace("_r", ""), 'value': f} for f in copt]
+
 plotbody = html.Div(
     className="ait",
     children=[
@@ -86,8 +89,8 @@ plotbody = html.Div(
                 html.H4("Colorscheme"),
                 dcc.Dropdown(
                     id='dropdown-color',
-                    options=[{'label': i, 'value': i} for i in ['Blackbody', 'Turbo']],
-                    value='Turbo',
+                    options=coloroptions,
+                    value='Turbo_r',
                     clearable=False,
                 ),
                 dcc.Dropdown(
@@ -157,7 +160,7 @@ def update_figure(sig, blim, discVal, sigma, months, bgtoggle, cs, clines):
                 line = dict(smoothing=1.0),
                 contours=dict(start=0.0,end=months,size=1),
                 contours_coloring=clines,
-                line_width=2,
+                line_width= 2 if clines == 'lines' else 1,
             ),
           )
     fig.update_xaxes(title_text="Fractional Background Uncertainty")
